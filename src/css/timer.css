@@ -1,0 +1,16 @@
+.timer {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    font-size: 50px;
+}
+
+.field {
+    display: flex;
+    margin-right: 20px;
+    flex-direction: column;
+}
+
+.field:last-child {
+    margin-right: 0;
+}
