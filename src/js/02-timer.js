@@ -2,17 +2,18 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import BSN from "bootstrap.native";
 const modalBSN = new BSN.Modal('#staticBackdrop');
-// console.log( modalBSN)
 
-const startBtn = document.querySelector('[data-start]');
-const daysEl = document.querySelector('[data-days]');
-const hoursEl = document.querySelector('[data-hours]');
-const minEl = document.querySelector('[data-minutes]');
-const secEl = document.querySelector('[data-seconds]');
+const startButton = document.querySelector(`[data-start]`)
+// const timerEl = document.querySelector(`.timer`)
+const days = document.querySelector(`[data-days]`)
+const hours = document.querySelector(`[data-hours]`)
+const minutes = document.querySelector(`[data-minutes]`)
+const seconds = document.querySelector(`[data-seconds]`)
 
-document.body.style.marginLeft = 20 + 'px';
-startBtn.disabled = true;
+let timeChosen = null;
+let intervalID = null;
 
+const timeObject = { days, hours, minutes, seconds }
 
 const options = {
   enableTime: true,
@@ -20,46 +21,24 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
     onClose(selectedDates) {
-    if (selectedDates[0] < new Date()) {
-        wrongDate();
-    } else {
-    enableStartBtn();
-    let isActive = false;
-    
-    startBtn.addEventListener('click', () => {
-    if(isActive) {
-        return;
-    }
-    const intervalId = setInterval(() => {
-    isActive = true;
-    console.log("~ isActive", isActive)
-    const timeLeft = selectedDates[0] - new Date();
-    console.log("~ timeLeft", timeLeft);
-    const { days, hours, minutes, seconds } = convertMs(timeLeft);
-    daysEl.textContent = days;
-    hoursEl.textContent = hours;
-    minEl.textContent = minutes;
-    secEl.textContent = seconds;
-    
-    if (timeLeft < 1000) {
-    clearInterval(intervalId);
-    wrongDate();
-    }
-    }, 1000);
-})
-    }
+         const timeNow = new Date();
+        timeChosen = selectedDates[0];
+        const timeLeft = timeChosen - timeNow;
+
+          if (timeLeft < 0) {
+            modalBSN.show();
+              return;
+        }
+
+        startButton.disabled = false;
+        return timeChosen;
   },
 };
 
-flatpickr('#datetime-picker', options );
-function enableStartBtn() {
-    startBtn.disabled = false;
-}
+startButton.addEventListener(`click`, onStartButton)
+startButton.disabled = true;
 
-function wrongDate() {
-    startBtn.disabled = true;
-    modalBSN.show();
-}
+flatpickr("#datetime-picker", options);
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -81,14 +60,39 @@ function convertMs(ms) {
 }
 
 function addLeadingZero(value) {
-    return String(value).padStart(2, '0');
+    return String(value).padStart(2, '0')
 }
 
-// console.log(convertMs(2000)); // {days: 0, hours: 0, minutes: 0, seconds: 2}
-// console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
-// console.log(convertMs(24140000)); // {days: 0, hours: 6 minutes: 42, seconds: 20}
-/*
-Якщо користувач вибрав дату в минулому, покажи window.alert() з текстом "Please choose a date in the future".
-Якщо користувач вибрав валідну дату (в майбутньому), кнопка «Start» стає активною.
-Кнопка «Start» повинна бути неактивною доти, доки користувач не вибрав дату в майбутньому.
-Натисканням на кнопку «Start» починається відлік часу до обраної дати з моменту натискання. */
+function onStartButton(event) {
+    intervalID = setInterval(startCountdown, 1000)
+}
+
+function startCountdown() {
+    startButton.disabled = true;
+    const timeNow = Date.now();
+    const timeLeft = timeChosen - timeNow;
+    const convertedTime = convertMs(timeLeft);
+    for (const time in timeObject) {
+        if  (Object.keys(convertedTime).includes(time)) {
+        timeObject[time].textContent = convertedTime[time];
+        }
+    }
+
+    if (timeLeft <= 0) {
+        stopCountdown()
+    }
+}
+
+function stopCountdown() {
+  const modalTitle = document.querySelector('.modal-title');
+  const modalBody = document.querySelector('.modal-body');
+  clearInterval(intervalID);
+  
+  modalTitle.textContent = 'GREAT!';
+  modalBody.textContent = "IT'S HIGHT TIME WE HAD SOME BEER:)";
+  modalBSN.show();
+    for (const time in timeObject) {
+        timeObject[time].textContent = `00`;
+    }
+    startButton.disabled = true;
+}
