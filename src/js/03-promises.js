@@ -41,5 +41,3 @@ function onFormSubmit(e) {
     }
   }
 }
-
-console.log();
