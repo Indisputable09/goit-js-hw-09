@@ -3,8 +3,9 @@ import "flatpickr/dist/flatpickr.min.css";
 import BSN from "bootstrap.native";
 const modalBSN = new BSN.Modal('#staticBackdrop');
 
+document.body.style.marginLeft = 20 + 'px';
+
 const startButton = document.querySelector(`[data-start]`)
-// const timerEl = document.querySelector(`.timer`)
 const days = document.querySelector(`[data-days]`)
 const hours = document.querySelector(`[data-hours]`)
 const minutes = document.querySelector(`[data-minutes]`)
