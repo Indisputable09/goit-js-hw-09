@@ -4,26 +4,25 @@ const formEl = document.querySelector('.form');
 const delayEl = document.querySelector('[name=delay]');
 const stepEl = document.querySelector('[name=step]');
 const amountEl = document.querySelector('[name=amount]');
+const buttonEl = document.querySelector('button');
+const inputsEl = document.querySelectorAll('input');
 
+buttonEl.disabled = true;
+
+formEl.addEventListener('input', stateHandle);
 formEl.addEventListener('submit', onFormSubmit);
 
 function createPromise(position, delay) {
   const shouldResolve = Math.random() > 0.3;
 
   return new Promise((resolve, reject) => {
-    if (shouldResolve) {
+    setTimeout(() => {
+      if (shouldResolve) {
       resolve({ position, delay });
-    } else {
-      reject({ position, delay });
     }
-  }).then(({ position, delay }) => {
-    Notify.success(`Fulfilled promise ${position} in ${delay}ms`);
-    console.log(`✅ Fulfilled promise ${position} in ${delay}ms`);
+      reject({ position, delay })
+    }, delay);
   })
-    .catch(({ position, delay }) => {
-      Notify.failure(`Rejected promise ${position} in ${delay}ms`);
-      console.log(`❌ Rejected promise ${position} in ${delay}ms`);
-    })
 }
 
 function onFormSubmit(e) {
@@ -33,11 +32,26 @@ function onFormSubmit(e) {
   e.preventDefault();
   for (let i = 1; i <= amount; i++) {
     const timeOutStep = delay + i * step - step;
-    if (i === 1) {
-      setTimeout(createPromise, delay, i, delay);
+    createPromise(i, timeOutStep).then(({ position, delay }) => {
+        Notify.success(`Fulfilled promise ${position} in ${delay}ms`);
+    console.log(`✅ Fulfilled promise ${position} in ${delay}ms`);
+  })
+    .catch(({ position, delay }) => {
+      console.log(`❌ Rejected promise ${position} in ${delay}ms`);
+      Notify.failure(`Rejected promise ${position} in ${delay}ms`);
+    })
+  }
+  buttonEl.disabled = true;
+  formEl.reset();
+}
+
+function stateHandle() {
+  inputsEl.forEach((element) => {
+    if (element.value === "") {
+      buttonEl.disabled = true;
     }
     else {
-      setTimeout(createPromise, timeOutStep, i, timeOutStep)
+      buttonEl.disabled = false;
     }
-  }
+  })
 }
